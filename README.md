@@ -1,4 +1,4 @@
-php-antispam
+php-antispam v.3.0
 ============
 [![Build Status](https://travis-ci.org/CleanTalk/php-antispam.svg)](https://travis-ci.org/CleanTalk/php-antispam)
 
