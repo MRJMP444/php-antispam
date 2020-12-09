@@ -7,7 +7,7 @@ namespace Cleantalk\Variables;
  * Safety handler for $_COOKIE
  *
  * @usage \Cleantalk\Variables\Cookie::get( $name );
- *
+ * @since 3.0
  * @package Cleantalk\Variables
  */
 class Cookie extends ServerVariables{
@@ -27,10 +27,10 @@ class Cookie extends ServerVariables{
 	}
 	
 	/**
-	 * Gets given $_COOKIE variable and seva it to memory
+	 * Gets given $_COOKIE variable and save it to memory
 	 * @param $name
 	 *
-	 * @return mixed|string
+	 * @return string       variable value or ''
 	 */
 	protected function get_variable( $name ){
 		
@@ -44,7 +44,7 @@ class Cookie extends ServerVariables{
 		if( empty( $value ) )
 			$value = isset( $_COOKIE[ $name ] ) ? $_COOKIE[ $name ]	: '';
 		
-		// Remember for thurther calls
+		// Remember for further calls
 		static::getInstance()->remebmer_variable( $name, $value );
 		
 		return $value;

@@ -7,7 +7,7 @@ namespace Cleantalk\Variables;
  * Safety handler for ${_SOMETHING}
  *
  * @usage \Cleantalk\Variables\{SOMETHING}::get( $name );
- *
+ * @since 3.0
  * @package Cleantalk\Variables
  */
 class ServerVariables{

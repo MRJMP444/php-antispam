@@ -5,7 +5,7 @@ namespace Cleantalk\Variables;
 /**
  * Class Server
  * Wrapper to safely get $_SERVER variables
- *
+ * @since 3.0
  * @package Cleantalk\Variables
  */
 class Server extends ServerVariables{
@@ -25,11 +25,11 @@ class Server extends ServerVariables{
 	}
 	
 	/**
-	 * Gets given $_SERVER variable and seva it to memory
+	 * Gets given $_SERVER variable and save it to memory
 	 *
 	 * @param string $name
 	 *
-	 * @return mixed|string
+	 * @return string       variable value or ''
 	 */
 	protected function get_variable( $name ){
 		
@@ -49,11 +49,11 @@ class Server extends ServerVariables{
 		if( in_array( $name, array( 'REQUEST_METHOD' ) ) )
 			$value = strtoupper( $value );
 		
-		// Convert HTML chars for HTTP_USER_AGENT, HTTP_USER_AGENT, SERVER_NAME
-		if( in_array( $name, array( 'HTTP_USER_AGENT', 'HTTP_USER_AGENT', 'SERVER_NAME' ) ) )
+		// Convert HTML chars for HTTP_USER_AGENT, HTTP_REFERER, SERVER_NAME
+		if( in_array( $name, array( 'HTTP_USER_AGENT', 'HTTP_REFERER', 'SERVER_NAME' ) ) )
 			$value = htmlspecialchars( $value );
 		
-		// Remember for thurther calls
+		// Remember for further calls
 		static::getInstance()->remebmer_variable( $name, $value );
 		
 		return $value;
@@ -64,9 +64,9 @@ class Server extends ServerVariables{
 	 *
 	 * @param string $string needle
 	 *
-	 * @return bool|int
+	 * @return bool
 	 */
-	public function in_uri( $string ){
+	public static function in_uri( $string ){
 		return self::has_string( 'REQUEST_URI', $string );
 	}
 	
@@ -75,9 +75,9 @@ class Server extends ServerVariables{
 	 *
 	 * @param string $string needle
 	 *
-	 * @return bool|int
+	 * @return bool
 	 */
-	public function in_referer( $string ){
+	public static function in_referer( $string ){
 		return self::has_string( 'HTTP_REFERER', $string );
 	}
 }

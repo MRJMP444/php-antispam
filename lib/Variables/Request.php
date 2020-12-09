@@ -7,7 +7,7 @@ namespace Cleantalk\Variables;
  * Safety handler for $_REQUEST
  *
  * @usage \Cleantalk\Variables\Request::get( $name );
- *
+ * @since 3.0
  * @package Cleantalk\Variables
  */
 class Request extends ServerVariables{
@@ -27,10 +27,10 @@ class Request extends ServerVariables{
 	}
 	
 	/**
-	 * Gets given $_REQUEST variable and seva it to memory
+	 * Gets given $_REQUEST variable and save it to memory
 	 * @param $name
 	 *
-	 * @return mixed|string
+	 * @return string       variable value or ''
 	 */
 	protected function get_variable( $name ){
 		
@@ -40,7 +40,7 @@ class Request extends ServerVariables{
 		
 		$value = isset( $_REQUEST[ $name ] ) ? $_REQUEST[ $name ]	: '';
 		
-		// Remember for thurther calls
+		// Remember for further calls
 		static::getInstance()->remebmer_variable( $name, $value );
 		
 		return $value;

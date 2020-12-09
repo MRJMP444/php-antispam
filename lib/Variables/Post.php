@@ -8,7 +8,7 @@ namespace Cleantalk\Variables;
  * Safety handler for $_POST
  *
  * @usage \Cleantalk\Variables\Post::get( $name );
- *
+ * @since 3.0
  * @package Cleantalk\Variables
  */
 class Post extends ServerVariables{
@@ -28,10 +28,10 @@ class Post extends ServerVariables{
 	}
 	
 	/**
-	 * Gets given $_POST variable and seva it to memory
+	 * Gets given $_POST variable and save it to memory
 	 * @param $name
 	 *
-	 * @return mixed|string
+	 * @return string       variable value or ''
 	 */
 	protected function get_variable( $name ){
 		
@@ -45,7 +45,7 @@ class Post extends ServerVariables{
 		if( empty( $value ) )
 			$value = isset( $_POST[ $name ] ) ? $_POST[ $name ]	: '';
 		
-		// Remember for thurther calls
+		// Remember for further calls
 		static::getInstance()->remebmer_variable( $name, $value );
 		
 		return $value;

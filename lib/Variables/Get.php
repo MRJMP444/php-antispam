@@ -7,7 +7,7 @@ namespace Cleantalk\Variables;
  * Safety handler for $_GET
  *
  * @usage \Cleantalk\Variables\Get::get( $name );
- *
+ * @since 3.0
  * @package Cleantalk\Variables
  */
 class Get extends ServerVariables{
@@ -27,10 +27,10 @@ class Get extends ServerVariables{
 	}
 	
 	/**
-	 * Gets given $_GET variable and seva it to memory
+	 * Gets given $_GET variable and save it to memory
 	 * @param $name
 	 *
-	 * @return mixed|string
+	 * @return string       variable value or ''
 	 */
 	protected function get_variable( $name ){
 		
@@ -44,7 +44,7 @@ class Get extends ServerVariables{
 		if( empty( $value ) )
 			$value = isset( $_GET[ $name ] ) ? $_GET[ $name ]	: '';
 		
-		// Remember for thurther calls
+		// Remember for further calls
 		static::getInstance()->remebmer_variable( $name, $value );
 		
 		return $value;
