@@ -1,13 +1,9 @@
 <?php
-require_once "lib/Cleantalk.php";
-require_once "lib/CleantalkRequest.php";
-require_once "lib/CleantalkResponse.php";
-require_once "lib/CleantalkHelper.php";
-require_once "lib/CleantalkAPI.php";
-require_once "lib/cleantalk-php-patch.php";
 
-use lib\Cleantalk;
-use lib\CleantalkRequest;
+require_once "../vendor/autoload.php"; //Composer
+
+use Cleantalk\Cleantalk;
+use Cleantalk\CleantalkRequest;
 
 class CleantalkTest extends \PHPUnit\Framework\TestCase 
 {
@@ -15,12 +11,12 @@ class CleantalkTest extends \PHPUnit\Framework\TestCase
 
 	protected $ct_request;
 
-	public function setUp()
+	public function setUp() : void
 	{
 		$this->ct = new Cleantalk();
-		$this->ct->server_url = 'http://moderate.cleantalk.org';
+		$this->ct->server_url = 'https://moderate.cleantalk.org';
 		$this->ct_request = new CleantalkRequest();
-		$this->ct_request->auth_key = getenv("CLEANTALK_TEST_API_KEY");
+		$this->ct_request->auth_key = getenv( 'CLEANTALK_TEST_API_KEY');
 	}
 
 	public function testIsAllowMessage()
