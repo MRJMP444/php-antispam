@@ -12,7 +12,7 @@
             "Cleantalk\\": "lib"
         },
         "files": [
-            "lib/cleantalk-php-patch.php"
+            "lib/Common/cleantalk-php-patch.php"
         ]
     }
 }
