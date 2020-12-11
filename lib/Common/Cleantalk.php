@@ -251,7 +251,7 @@ class Cleantalk {
 		
 		// Using current server without changing it
         $result = !empty($this->work_url) && ($this->server_changed + $this->server_ttl > time())
-	        ? $this->sendRequest($msg, $this->work_url, $this->server_timeout)
+	        ? $this->sendRequest($this->work_url, $msg, $this->server_timeout)
 			: false;
 
 		// Changing server
@@ -276,7 +276,7 @@ class Cleantalk {
 				$this->work_url = $url_protocol.$dns.$url_suffix;
 				$this->server_ttl = $server['ttl'];
 
-				$result = $this->sendRequest($msg, $this->work_url, $this->server_timeout);
+				$result = $this->sendRequest($this->work_url, $msg, $this->server_timeout);
 
 				if ($result !== false && $result->errno === 0) {
 					$this->server_change = true;
@@ -407,7 +407,7 @@ class Cleantalk {
      * @param $msg
      * @return boolean|Response
      */
-    private function sendRequest($data = null, $url, $server_timeout = 3)
+    private function sendRequest( $url, $data = null, $server_timeout = 3 )
 	{
 		$original_args = func_get_args();
         // Convert to array
