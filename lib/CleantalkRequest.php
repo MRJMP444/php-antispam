@@ -6,166 +6,196 @@ namespace Cleantalk;
  */
 class CleantalkRequest {
 
-     /**
-     *  All http request headers
-     * @var string
-     */
-     public $all_headers = null;
-     
-     /**
-     *  IP address of connection
-     * @var string
-     */
-     //public $remote_addr = null;
-     
-     /**
-     *  Last error number
-     * @var integer
-     */
-     public $last_error_no = null;
-     
-     /**
-     *  Last error time
-     * @var integer
-     */
-     public $last_error_time = null;
-     
-     /**
-     *  Last error text
-     * @var string
-     */
-     public $last_error_text = null;
+    /**
+    *  All http request headers
+    * @var string
+    */
+    public $all_headers = null;
 
     /**
-     * User message
-     * @var string
-     */
+    *  Last error number
+    * @var integer
+    */
+    public $last_error_no = null;
+
+    /**
+    *  Last error time
+    * @var integer
+    */
+    public $last_error_time = null;
+
+    /**
+    *  Last error text
+    * @var string
+    */
+    public $last_error_text = null;
+
+    /**
+    * User message
+    * @var string
+    */
     public $message = null;
 
     /**
-     * Post example with last comments
-     * @var string
-     */
+    * Post example with last comments
+    * @var string
+    */
     public $example = null;
 
     /**
-     * Auth key
-     * @var string
-     */
+    * Auth key
+    * @var string
+    */
     public $auth_key = null;
 
     /**
-     * Engine
-     * @var string
-     */
+    * Engine
+    * @var string
+    */
     public $agent = null;
 
     /**
-     * Is check for stoplist,
-     * valid are 0|1
-     * @var int
-     */
+    * Is check for stoplist,
+    * valid are 0|1
+    * @var int
+    */
     public $stoplist_check = null;
 
     /**
-     * Language server response,
-     * valid are 'en' or 'ru'
-     * @var string
-     */
+    * Language server response,
+    * valid are 'en' or 'ru'
+    * @var string
+    */
     public $response_lang = null;
 
     /**
-     * User IP
-     * @var string
-     */
+    * User IP
+    * @var string
+    */
     public $sender_ip = null;
 
     /**
-     * User email
+     * User IP - x-forwarded-for
      * @var string
      */
-    public $sender_email = null;
-
-    /**
-     * User nickname
-     * @var string
-     */
-    public $sender_nickname = null;
-
-    /**
-     * Sender info JSON string
-     * @var string
-     */
-    public $sender_info = null;
-
-    /**
-     * Post info JSON string
-     * @var string
-     */
-    public $post_info = null;
-
-    /**
-     * Is allow links, email and icq,
-     * valid are 1|0
-     * @var int
-     */
-    public $allow_links = null;
-
-    /**
-     * Time form filling
-     * @var int
-     */
-    public $submit_time = null;
-    
     public $x_forwarded_for = '';
+
+    /**
+     * User IP - x-real-ip
+     * @var string
+     */
     public $x_real_ip = '';
 
     /**
-     * Is enable Java Script,
-     * valid are 0|1|2
-	 * Status:
-	 *  null - JS html code not inserted into phpBB templates
-	 *  0 - JS disabled at the client browser
-	 *  1 - JS enabled at the client broswer
-     * @var int
-     */
+    * User email
+    * @var string
+    */
+    public $sender_email = null;
+
+    /**
+    * User nickname
+    * @var string
+    */
+    public $sender_nickname = null;
+
+    /**
+    * Sender info JSON string
+    * @var string
+    */
+    public $sender_info = null;
+
+    /**
+    * Post info JSON string
+    * @var string
+    */
+    public $post_info = null;
+
+    /**
+    * Is allow links, email and icq,
+    * valid are 1|0
+    * @var int
+    */
+    public $allow_links = null;
+
+    /**
+    * Time form filling
+    * @var int
+    */
+    public $submit_time = null;
+
+    /**
+    * Is enable Java Script,
+    * valid are null|0|1
+    * Status:
+    *  null - JS html code not inserted into frontend
+    *  0 - JS disabled at the client browser
+    *  1 - JS enabled at the client broswer
+    * @var int
+    */
     public $js_on = null;
 
     /**
-     * user time zone
-     * @var string
-     */
+    * User time zone
+    * @var string
+    */
     public $tz = null;
 
     /**
-     * Feedback string,
-     * valid are 'requset_id:(1|0)'
-     * @var string
-     */
+    * Feedback string,
+    * valid are 'requset_id:(1|0)'
+    * @var string
+    */
     public $feedback = null;
 
     /**
-     * Phone number
-     * @var type 
-     */
+    * Phone number
+    * @var string
+    */
     public $phone = null;
-    
+
     /**
     * Method name
     * @var string
     */
-    public $method_name = 'check_message'; 
+    public $method_name = 'check_message';
 
     /**
      * Fill params with constructor
      * @param type $params
      */
-    public function __construct($params = null) {
-        if (is_array($params) && count($params) > 0) {
-            foreach ($params as $param => $value) {
-                $this->{$param} = $value;
-            }
-        }
+    public function __construct($params = null)
+    {
+        // IPs
+        $this->sender_ip       = isset($params['sender_ip'])       ? (string)$params['sender_ip']       : null;
+        $this->x_forwarded_for = isset($params['x_forwarded_for']) ? (string)$params['x_forwarded_for'] : null;
+        $this->x_real_ip       = isset($params['x_real_ip'])       ? (string)$params['x_real_ip']       : null;
+
+        // Misc
+        $this->agent           = isset($params['agent'])            ? (string)$params['agent']                    : null;
+        $this->auth_key        = isset($params['auth_key'])         ? (string)$params['auth_key']                 : null;
+        $this->sender_email    = isset($params['sender_email'])     ? (string)$params['sender_email']             : null;
+        $this->sender_nickname = !empty($params['sender_nickname']) ? (string)$params['sender_nickname']          : null;
+        $this->phone           = !empty($params['phone'])           ? (string)$params['phone']                    : null;
+        $this->js_on           = isset($params['js_on'])            ? (int)$params['js_on']                       : null;
+        $this->submit_time     = isset($params['submit_time'])      ? (int)$params['submit_time']                 : null;
+        $this->post_info       = isset($params['post_info'])        ? (string)json_encode($params['post_info'])   : null;
+        $this->sender_info     = isset($params['sender_info'])      ? (string)json_encode($params['sender_info']) : null;
+
+        $this->message = ! empty( $params['message'] )
+            ? ( ! is_scalar( $params['message'] )
+                ? serialize( $params['message'] )
+                : $params['message'] )
+            : null;
+        $this->example = ! empty( $params['example'] )
+            ? ( ! is_scalar( $params['example'] )
+                ? serialize( $params['example'] )
+                : $params['example'] )
+            : null;
+
+        // Feedback
+        $this->feedback        = !empty($params['feedback']) ? $params['feedback'] : null;
+
     }
 
 }
+
