@@ -409,115 +409,40 @@ class Cleantalk {
      */
     private function sendRequest( $url, $data = null, $server_timeout = 3 )
 	{
-		$original_args = func_get_args();
-        // Convert to array
-        $data = (array)json_decode(json_encode($data), true);
-		
-		//Cleaning from 'null' values
-		$tmp_data = array();
-		foreach($data as $key => $value){
-			if($value !== null)
-				$tmp_data[$key] = $value;
-		}
-		$data = $tmp_data;
-		unset($key, $value, $tmp_data);
-		
-		// Convert to JSON
-		$data = json_encode($data);
-		
         if (isset($this->api_version)) {
             $url = $url . $this->api_version;
         }
-        
-        $result = false;
-        $curl_error = null;
 		
 		// Switching to secure connection
-		if ($this->ssl_on && !preg_match("/^https:/", $url)){
+		if ($this->ssl_on && ! preg_match("/^https:/", $url)){
 			$url = preg_replace("/^(http)/i", "$1s", $url);
 		}
 
-        if(function_exists('curl_init')) {
+        $result = Helper::http__request( $url, $data );
 
-            $ch = curl_init();
-
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $server_timeout);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // receive server response ...
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); // resolve 'Expect: 100-continue' issue
-            curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0); // see http://stackoverflow.com/a/23322368
-
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disabling CA cert verivication and
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);     // Disabling common name verification
-
-            if ($this->ssl_on && $this->ssl_path != '') {
-                curl_setopt($ch, CURLOPT_CAINFO, $this->ssl_path);
+        // Success result
+        if( isset( $result['result'] ) ) {
+            $errstr = null;
+            $response = json_decode($result['result']);
+            if ( $result['result'] !== false && is_object( $response ) ) {
+                $response->errno = 0;
+                $response->errstr = $errstr;
+            } else {
+                $errstr = 'Unknown response from ' . $url . '.' . ' ' . $result['result'];
+                $response = null;
+                $response['errno'] = 1;
+                $response['errstr'] = $errstr;
+                $response = json_decode(json_encode($response));
             }
 
-            $result = curl_exec($ch);
-            if (!$result) {
-                $curl_error = curl_error($ch);
-                // Use SSL next time, if error occurs.
-                if(!$this->ssl_on){
-                    $this->ssl_on = true;
-                    return $this->sendRequest($original_args[0], $original_args[1], $server_timeout);
-                }
-            }
-
-            curl_close($ch);
-        }
-
-        if (!$result) {
-            $allow_url_fopen = ini_get('allow_url_fopen');
-            if (function_exists('file_get_contents') && isset($allow_url_fopen) && $allow_url_fopen == '1') {
-                $opts = array('http' =>
-                  array(
-                    'method'  => 'POST',
-                    'header'  => "Content-Type: text/html\r\n",
-                    'content' => $data,
-                    'timeout' => $server_timeout
-                  )
-                );
-
-                $context  = stream_context_create($opts);
-                $result = @file_get_contents($url, false, $context);
-            }
-        }
-        
-        if (!$result) {
+        // Error result
+        } elseif( isset( $result['error'] ) ) {
             $response = null;
             $response['errno'] = 2;
-            if (!Helper::is_json($result)) {
-                $response['errstr'] = 'Wrong server response format: ' . substr( $result, 100 );
-            }
-            else {
-                $response['errstr'] = $curl_error
-                    ? sprintf( "CURL error: '%s'", $curl_error )
-                    : 'No CURL support compiled in';
-                $response['errstr'] .= ' or disabled allow_url_fopen in php.ini.';
-            }
+            $response['errstr'] = $result['error'];
             $response = json_decode( json_encode( $response ) );
-            
-            return $response;
         }
-        
-        $errstr = null;
-        $response = json_decode($result);
-        if ($result !== false && is_object($response)) {
-            $response->errno = 0;
-            $response->errstr = $errstr;
-        } else {
-            $errstr = 'Unknown response from ' . $url . '.' . ' ' . $result;
-            
-            $response = null;
-            $response['errno'] = 1;
-            $response['errstr'] = $errstr;
-            $response = json_decode(json_encode($response));
-        } 
-        
-        
+
         return $response;
     }
 }

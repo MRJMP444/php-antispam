@@ -2,6 +2,8 @@
 
 namespace Cleantalk\Common;
 
+use Cleantalk\Exceptions\CleantalkHttpException;
+
 /**
  * CleanTalk Helper class.
  * Compatible with any CMS.
@@ -16,11 +18,6 @@ namespace Cleantalk\Common;
  */
 class Helper
 {
-    /**
-     * Default user agent for HTTP requests
-     */
-    const AGENT = 'Cleantalk-Helper/3.4';
-
     /**
      * @var array Set of private networks IPv4 and IPv6
      */
@@ -66,7 +63,7 @@ class Helper
      * @param array $ip_types Type of IP you want to receive
      * @param bool  $v4_only
      *
-     * @return array|mixed|null
+     * @return array|string|null
      */
     static public function ip__get($ip_types = array('real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare'), $v4_only = true)
     {
@@ -209,9 +206,9 @@ class Helper
      *
      * @return bool
      */
-    static function ip__is_private_network($ip, $ip_type = 'v4')
+    static function ip__is_private_network( $ip, $ip_type = 'v4' )
     {
-        return self::ip__mask_match($ip, self::$private_networks[$ip_type], $ip_type);
+        return self::ip__mask_match( $ip, self::$private_networks[$ip_type], $ip_type );
     }
 
     /**
@@ -220,7 +217,7 @@ class Helper
      * Hextet by hextet for IPv6
      *
      * @param string $ip
-     * @param string $cidr       work to compare with
+     * @param string|array $cidr       work to compare with
      * @param string $ip_type    IPv6 or IPv4
      * @param int    $xtet_count Recursive counter. Determs current part of address to check.
      *
@@ -443,119 +440,38 @@ class Helper
      * get      - GET-request
      * ssl      - use SSL
      *
-     * @param string       $url     URL
-     * @param array        $data    POST|GET indexed array with data to send
+     * @param string $url URL
+     * @param array $data POST|GET indexed array with data to send
      * @param string|array $presets String or Array with presets: get_code, async, get, ssl, dont_split_to_array
-     * @param array        $opts    Optional option for CURL connection
+     * @param array $opts Optional option for CURL connection
      *
-     * @return array|bool (array || array('error' => true))
+     * @return array  (array('result => 'json_string') || array('error' => 'error_string'))
      */
-    static public function http__request($url, $data = array(), $presets = null, $opts = array())
+    static public function http__request( $url, $data = array(), $presets = null, $opts = array() )
     {
-        if(function_exists('curl_init')){
+        if( ! empty( $data ) ) {
+            $data = Http::prepareData( $data );
+        }
 
-            $ch = curl_init();
+        $curl_res = Http::doCurl( $url, $data, $presets, $opts );
 
-            if(!empty($data)){
-                // If $data scalar converting it to array
-                $data = is_string($data) || is_int($data) ? array($data => 1) : $data;
-                // Build query
-                $opts[CURLOPT_POSTFIELDS] = $data;
+        if( isset( $curl_res['error'] ) ) {
+            $out = $curl_res['error'];
+            $fopen_res = Http::doUrlFopen( $url, $data );
+            if( isset( $fopen_res['error'] ) ) {
+                $out .= ' ' . $fopen_res['error'];
+            } else {
+                $out = $fopen_res;
             }
-
-            // Merging OBLIGATORY options with GIVEN options
-            $opts = self::array_merge__save_numeric_keys(
-                array(
-                    CURLOPT_URL => $url,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_CONNECTTIMEOUT_MS => 3000,
-                    CURLOPT_FORBID_REUSE => true,
-                    CURLOPT_USERAGENT => self::AGENT . '; ' . ( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : 'UNKNOWN_HOST' ),
-                    CURLOPT_POST => true,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_SSL_VERIFYHOST => 0,
-                    CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
-                    CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_MAXREDIRS => 5,
-                ),
-                $opts
-            );
-
-            // Use presets
-            $presets = is_array($presets) ? $presets : explode(' ', $presets);
-            foreach($presets as $preset){
-
-                switch($preset){
-
-                    // Do not follow redirects
-                    case 'dont_follow_redirects':
-                        $opts[CURLOPT_FOLLOWLOCATION] = false;
-                        $opts[CURLOPT_MAXREDIRS] = 0;
-                        break;
-
-                    // Get headers only
-                    case 'get_code':
-                        $opts[CURLOPT_HEADER] = true;
-                        $opts[CURLOPT_NOBODY] = true;
-                        break;
-
-                    // Make a request, don't wait for an answer
-                    case 'async':
-                        $opts[CURLOPT_CONNECTTIMEOUT_MS] = 1000;
-                        $opts[CURLOPT_TIMEOUT_MS] = 1000;
-                        break;
-
-                    case 'get':
-                        $opts[CURLOPT_URL] .= $data ? '?' . str_replace("&amp;", "&", http_build_query($data)) : '';
-                        $opts[CURLOPT_CUSTOMREQUEST] = 'GET';
-                        $opts[CURLOPT_POST] = false;
-                        $opts[CURLOPT_POSTFIELDS] = null;
-                        break;
-
-                    case 'ssl':
-                        $opts[CURLOPT_SSL_VERIFYPEER] = true;
-                        $opts[CURLOPT_SSL_VERIFYHOST] = 2;
-                        if(defined('CLEANTALK_CASERT_PATH') && CLEANTALK_CASERT_PATH)
-                            $opts[CURLOPT_CAINFO] = CLEANTALK_CASERT_PATH;
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-            }
-            unset($preset);
-
-            curl_setopt_array($ch, $opts);
-            $result = curl_exec($ch);
-
-            // RETURN if async request
-            if(in_array('async', $presets))
-                return true;
-
-            if($result){
-
-                if(strpos($result, PHP_EOL) !== false && !in_array('dont_split_to_array', $presets))
-                    $result = explode(PHP_EOL, $result);
-
-                // Get code crossPHP method
-                if(in_array('get_code', $presets)){
-                    $curl_info = curl_getinfo($ch);
-                    $result = $curl_info['http_code'];
-                }
-                curl_close($ch);
-                $out = $result;
-            }else
-                $out = array('error' => curl_error($ch));
-        }else
-            $out = array('error' => 'CURL_NOT_INSTALLED');
+        } else {
+            $out = $curl_res;
+        }
 
         /**
          * Getting HTTP-response code without cURL
          */
         if($presets && ($presets == 'get_code' || (is_array($presets) && in_array('get_code', $presets)))
-            && isset($out['error']) && $out['error'] == 'CURL_NOT_INSTALLED'
+            && isset($out['error']) && strpos( $curl_res['error'], 'CURL_NOT_INSTALLED' ) !== false
         ){
             $headers = get_headers($url);
             $out = (int)preg_replace('/.*(\d{3}).*/', '$1', $headers[0]);
@@ -838,6 +754,8 @@ class Helper
      * @param string     $quotes
      *
      * @return int|string
+     *
+     * @todo Move this method to the DB class
      */
     public static function db__prepare_param($param, $quotes = '\'')
     {

@@ -607,7 +607,7 @@ class API
 	 *
 	 * @return array|bool
 	 */
-	static public function send_request($data, $url = self::URL, $timeout = 10, $ssl = false, $ssl_path = '')
+	static public function send_request( $data, $url = self::URL, $timeout = 10, $ssl = false, $ssl_path = '' )
 	{
 		// Possibility to switch agent vaersion
 		$data['agent'] = !empty($data['agent'])
@@ -627,8 +627,18 @@ class API
 		
 		// Possibility to switch API url
 		$url = defined('CLEANTALK_API_URL') ? CLEANTALK_API_URL : $url;
-		
-		if(function_exists('curl_init')){
+
+        if( ! empty( $data ) ) {
+            $data = Http::prepareData( $data );
+        }
+
+        $out = Http::doCurl( $url, $data, $presets, $opts );
+
+        if( isset( $out['error'] ) ) {
+            $out = Http::doUrlFopen( $url, $data );
+        }
+
+		/*if(function_exists('curl_init')){
 			
 			$ch = curl_init();
 			
@@ -700,9 +710,9 @@ class API
 			}else{
 				$errors .= '_AND_ALLOW_URL_FOPEN_IS_DISABLED';
 			}
-		}
+		}*/
 
-		return empty($result) || !empty($errors)
+		return empty( $result ) || ! empty( $errors )
 			? array('error' => $errors)
 			: $result;
 	}
