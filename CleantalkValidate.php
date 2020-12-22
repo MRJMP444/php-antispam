@@ -1,10 +1,5 @@
 <?php
-//require_once "vendor/autoload.php"; -- Composer
-
-require_once "lib/Cleantalk.php";
-require_once "lib/CleantalkRequest.php";
-require_once "lib/CleantalkResponse.php";
-require_once "lib/CleantalkHelper.php";
+require_once "vendor/autoload.php"; // Composer
 
 /**
  * CleanTalk anti-spam script for any web form 
@@ -18,9 +13,8 @@ require_once "lib/CleantalkHelper.php";
  * @see https://github.com/CleanTalk/php-antispam 
  *
  */
-use Cleantalk\CleantalkRequest;
+use Cleantalk\Common\Request;
 use Cleantalk\Cleantalk;
-use Cleantalk\CleantalkHelper;
 /*
     CleanTalk's global vars
 */
@@ -36,7 +30,7 @@ class CleantalkValidate
 
     public static function spamCheckUser($name = '', $email = '') 
     { 
-        $ct_request = new lib\CleantalkRequest(); 
+        $ct_request = new Request();
         $ct_request->auth_key = self::$access_key; 
         $ct_request->agent = 'php-api'; 
         $ct_request->sender_email = $email; 
@@ -44,7 +38,7 @@ class CleantalkValidate
         $ct_request->sender_nickname = $name; 
         $ct_request->submit_time = time() - (int) $_SESSION['ct_submit_time'];
         $ct_request->js_on = 1; 
-        $ct = new lib\Cleantalk(); 
+        $ct = new Cleantalk();
         $ct->server_url = self::$server_url; 
         // Check 
         $ct_result = $ct->isAllowUser($ct_request); 
@@ -53,7 +47,7 @@ class CleantalkValidate
     } 
     public static function spamCheckMessage($name = '', $email = '', $message = '') 
     { 
-        $ct_request = new CleantalkRequest(); 
+        $ct_request = new Request();
         $ct_request->auth_key = self::$access_key; 
         $ct_request->agent = 'php-api'; 
         $ct_request->sender_email = $email; 
