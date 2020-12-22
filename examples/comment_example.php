@@ -5,7 +5,7 @@ session_start();
 require_once "../vendor/autoload.php"; //Composer
 
 use Cleantalk\Cleantalk;
-use Cleantalk\CleantalkRequest;
+use Cleantalk\Common\Request;
 
 // Take params from config
 $config_url = 'http://moderate.cleantalk.org/api2.0/';
@@ -33,7 +33,7 @@ if (count($_POST)) {
         $message = $_POST['message'];
 
     // The facility in which to store the query parameters
-    $ct_request = new CleantalkRequest();
+    $ct_request = new Request();
 
     $ct_request->auth_key = $auth_key;
     $ct_request->agent = 'php-api';
