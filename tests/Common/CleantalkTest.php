@@ -3,7 +3,7 @@
 require_once "../vendor/autoload.php"; //Composer
 
 use Cleantalk\Cleantalk;
-use Cleantalk\CleantalkRequest;
+use Cleantalk\Common\Request;
 
 class CleantalkTest extends \PHPUnit\Framework\TestCase 
 {
@@ -15,7 +15,7 @@ class CleantalkTest extends \PHPUnit\Framework\TestCase
 	{
 		$this->ct = new Cleantalk();
 		$this->ct->server_url = 'https://moderate.cleantalk.org';
-		$this->ct_request = new CleantalkRequest();
+		$this->ct_request = new Request();
 		$this->ct_request->auth_key = getenv( 'CLEANTALK_TEST_API_KEY');
 	}
 
